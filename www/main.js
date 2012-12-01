@@ -46,7 +46,7 @@ $(document).ready(function() {
             var self = this;
             self.$el.empty();
             _.forEach(self.model.models, function(ce, i) {
-                self.$el.append((new CalendarView({model: self.model.get(i+1)})).render().el)
+                self.$el.append((new CalendarView({model: ce})).render().el)
             });
 
             return self;
