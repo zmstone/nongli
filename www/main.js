@@ -45,10 +45,7 @@ $(document).ready(function() {
         render: function() {
             var self = this;
             self.$el.empty();
-            _.forEach(self.model, function(ce, i) {
-                console.log("shabi");
-                console.log(i);
-                console.log(self.model.get(0));
+            _.forEach(self.model.models, function(ce, i) {
                 self.$el.append((new CalendarView({model: self.model.get(i+1)})).render().el)
             });
 
