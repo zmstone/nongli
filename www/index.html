@@ -185,10 +185,22 @@
       return true;
     });
   }
+  function yearCheckChange() {
+    var check = document.getElementById("year_checkbox");
+    var input = document.getElementById("input_year");
+    if(check.checked){
+      input.disabled=true;
+    }
+    else{
+      input.disabled=false;
+    }
+  }
 </script>
     <table>
     <tr>
-      <th>年</th><th>月</th><th>日</th>
+      <th>[2000~2099]<input type="checkbox" id="year_checkbox" onchange="yearCheckChange()">每年</input></th>
+      <th>月</th>
+      <th>日</th>
     </tr>
     <tr>
       <th><input id='input_year' value=2013 type="number"></input></th>
