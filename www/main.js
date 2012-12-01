@@ -31,6 +31,8 @@ $(document).ready(function() {
 
     // View
     var CalendarView = Backbone.View.extend({
+        tagName: "tr",
+
         initialize: function() {
             this.html = app.renderTemplate('calendar', this.model.toJSON());
         },
@@ -42,10 +44,12 @@ $(document).ready(function() {
     });
 
     var CalendarListView = Backbone.View.extend({
+        tagName: "table",
+
         render: function() {
             var self = this;
             self.$el.empty();
-            _.forEach(self.model.models, function(ce, i) {
+            _.each(self.model.models, function(ce, i) {
                 self.$el.append((new CalendarView({model: ce})).render().el)
             });
 
