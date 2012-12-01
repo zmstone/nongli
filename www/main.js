@@ -97,7 +97,7 @@ $(document).ready(function() {
                 console.log(i + ": " + calendars[i].id);
                 */
             }
-            console.log(calendarlist.toJSON());
+            //console.log(calendarlist.toJSON());
         }
     });
     // start to do backbone stuff
