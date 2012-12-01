@@ -141,8 +141,21 @@
     var y = date.getFullYear();
     return '' + y +'-'+ (m<=9?'0'+m:m) +'-'+ (d<=9?'0'+d:d);
   }
+  function getSelectedCalendarId(){
+    var L = document.getElementsByName("calendar_selection");
+    for(var i = 0; i < L.length; i ++) {
+      if(L[i].checked){
+        return L[i].id;
+      }
+    }
+    return null;
+  }
   function addEvent() {
-    var calendarId = "zmstone@gmail.com"; // TODO replace it with selection
+    var calendarId = getSelectedCalendarId();
+    if(null == calendarId){
+      alert("please select a calendar you want to add events to");
+      return true;
+    }
     var lYear = parseInt($('#input_year').val());
     var lMonth = parseInt($('#input_month').val());
     var lDay   = parseInt($('#input_day').val());
@@ -160,7 +173,14 @@
       };
       var request = gapi.client.calendar.events.insert(requestBody);
       request.execute(function(resp){
-        console.log(resp);
+        if(resp.code == undefined){
+          return true;
+        }
+        else{
+          alert('failed, reason: ' + resp.code + ',' + resp.message);
+          console.log(resp);
+          return false;
+        }
       });
       return true;
     });
