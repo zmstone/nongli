@@ -1307,4 +1307,12 @@ LunarMap.prototype.l2g = function(Y, M, D) {
   return null;
 };
 
+LunarMap.prototype.date2l = function(d) {
+  return this.g2l(d.getFullYear(), d.getMonth() + 1, d.getDate());
+};
+
+LunarMap.prototype.l2date = function(Y, M, D) {
+  var d = this.l2g(Y, M, D);
+  return new Date(d[0], d[1] - 1, d[2]);
+}
 
