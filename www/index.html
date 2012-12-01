@@ -125,14 +125,19 @@
     <hr/>
     <!--Add a button for the user to click to initiate auth sequence -->
     <button id="authorize-button" style="visibility: hidden">Authorize</button>
+    <br><b>select from one of your calendars below:</b><br/>
+    <hr/>
     <form>
-    <div id="content"></div>
+      <div id="content"></div>
     </form>
+    <hr/>
     <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
-    <span>lunar year</span><input id='input_year'></input><br/>
-    <span>lunar month</span><input id='input_month'></input><br/>
-    <span>lunar day</span><input id='input_day'></input><br/>
-    <span>event summary</span><input id='input_event'></input><br/>
-    <button id='button_send' class="btn btn-primary">ADD</button>
+    <table>
+    <tr><td><span>lunar year</span></td><td><input id='input_year'></input><br/></td></tr>
+    <tr><td><span>lunar month</span></td><td><input id='input_month'></input><br/></td></tr>
+    <tr><td><span>lunar day</span></td><td><input id='input_day'></input><br/></td></tr>
+    <tr><td><span>event summary</span></td><td><input id='input_event'></input><br/></td></tr>
+    <tr><td><button id='button_send' class="btn btn-primary">ADD</button></td></tr>
+    </table>
   </body>
 </html>
