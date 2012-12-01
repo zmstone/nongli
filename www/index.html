@@ -17,81 +17,106 @@
 <html>
   <head>
     <meta charset='utf-8' />
+    <link rel="stylesheet" type="text/css" href="bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="prettify.css" />
+    <link rel="stylesheet" type="text/css" href="codemirror.css" />
+
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="underscore.js"></script>
+    <script type="text/javascript" src="backbone.js"></script>
+    <script type="text/javascript" src="prettify.js"></script>
+    <script type="text/javascript" src="handlebars.js"></script>
+    <script type="text/javascript" src="boostrap.js"></script>
+    <script type="text/javascript" src="main.js"></script>
   </head>
+
+  <script type="text/javascript">
+    <!--global variable is bad-->
+    window.cal_result;
+
+    // Enter a client ID for a web application from the Google Developer Console.
+    // The provided clientId will only work if the sample is run directly from
+    // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
+    // In your Developer Console project, add a JavaScript origin that corresponds to the domain
+    // where you will be running the script.
+    var clientId = '424449423080';
+    // var clientId = '837050751313';
+
+    // Enter the API key from the Google Develoepr Console - to handle any unauthenticated
+    // requests in the code.
+    // The provided key works for this sample only when run from
+    // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
+    // To use in your own application, replace this API key with your own.
+    var apiKey = 'AIzaSyATN8YFPrFOLLeRI7B0bRTFhT3TmjdtFds';
+    // var apiKey = 'AIzaSyAdjHPT5Pb7Nu56WJ_nlrMGOAgUAtKjiPM';
+
+    // To enter one or more authentication scopes, refer to the documentation for the API.
+    var scopes = 'https://www.googleapis.com/auth/calendar';
+
+    // Use a button to handle authentication the first time.
+    function handleClientLoad() {
+        gapi.client.setApiKey(apiKey);
+        window.setTimeout(checkAuth,1);
+    }
+
+    function checkAuth() {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+    }
+
+
+    function handleAuthResult(authResult) {
+        var authorizeButton = document.getElementById('authorize-button');
+        if (authResult && !authResult.error) {
+            authorizeButton.style.visibility = 'hidden';
+            window.cal_result = makeApiCall();
+        } else {
+            authorizeButton.style.visibility = '';
+            authorizeButton.onclick = handleAuthClick;
+            window.cal_result = nil;
+        }
+    }
+
+    function handleAuthClick(event) {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+        return false;
+    }
+
+    // Load the API and make an API call.
+    function makeApiCall() {
+        console.log("making api call");
+        gapi.client.load('calendar', 'v3', function() {
+            var request = gapi.client.calendar.calendarList.list({
+                //'calendarId': 'zmstone@gmail.com'
+            });
+            request.execute(function(resp){
+                var calendars = resp.items;
+                if(calendars){
+                    for(var i=0; i<calendars.length; i ++){
+                        /*
+                        console.log("summary:");
+                        console.log(i + ": " + calendars[i].summary);
+                        console.log("id:");
+                        console.log(i + ": " + calendars[i].id);
+                        */
+                    };
+                    cal_app = new AppView();
+                    cal_app.start(calendars);
+                    cal_app.render();
+                }
+                else{
+                    alert(resp);
+                }
+            });
+        });
+    };
+  </script>
+
   <body>
     <!--Add a button for the user to click to initiate auth sequence -->
     <button id="authorize-button" style="visibility: hidden">Authorize</button>
-    <script type="text/javascript">
-      // Enter a client ID for a web application from the Google Developer Console.
-      // The provided clientId will only work if the sample is run directly from
-      // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
-      // In your Developer Console project, add a JavaScript origin that corresponds to the domain
-      // where you will be running the script.
-      var clientId = '424449423080';
-      // var clientId = '837050751313';
-
-      // Enter the API key from the Google Develoepr Console - to handle any unauthenticated
-      // requests in the code.
-      // The provided key works for this sample only when run from
-      // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
-      // To use in your own application, replace this API key with your own.
-      var apiKey = 'AIzaSyATN8YFPrFOLLeRI7B0bRTFhT3TmjdtFds';
-      // var apiKey = 'AIzaSyAdjHPT5Pb7Nu56WJ_nlrMGOAgUAtKjiPM';
-
-      // To enter one or more authentication scopes, refer to the documentation for the API.
-      var scopes = 'https://www.googleapis.com/auth/calendar';
-
-      // Use a button to handle authentication the first time.
-      function handleClientLoad() {
-        gapi.client.setApiKey(apiKey);
-        window.setTimeout(checkAuth,1);
-      }
-
-      function checkAuth() {
-        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
-      }
-
-
-      function handleAuthResult(authResult) {
-        var authorizeButton = document.getElementById('authorize-button');
-        if (authResult && !authResult.error) {
-          authorizeButton.style.visibility = 'hidden';
-          makeApiCall();
-        } else {
-          authorizeButton.style.visibility = '';
-          authorizeButton.onclick = handleAuthClick;
-        }
-      }
-
-      function handleAuthClick(event) {
-        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
-        return false;
-      }
-
-      // Load the API and make an API call.
-      function makeApiCall() {
-        gapi.client.load('calendar', 'v3', function() {
-          var request = gapi.client.calendar.calendarList.list({
-            //'calendarId': 'zmstone@gmail.com'
-          });
-          request.execute(function(resp){
-            var calendars = resp.items;
-            if(calendars){
-              for(var i=0; i<calendars.length; i ++){
-                console.log(i + ": " + calendars[i].summary);
-                console.log(i + ": " + calendars[i].id);
-              }
-            }
-            else{
-              alert(resp);
-            }
-          } );
-        });
-      }
-    </script>
-    <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
     <div id="content"></div>
-    <p>Retrieves your profile name using the Google Plus API.</p>
+    <p>Retrieves your profile name using the Google Plus API.shenme</p>
+    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
   </body>
 </html>
-
