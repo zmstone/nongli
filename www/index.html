@@ -187,11 +187,16 @@
   }
 </script>
     <table>
-    <tr><td><span>lunar year</span></td><td><input id='input_year' type="nunber" value=2013></input><br/></td></tr>
-    <tr><td><span>lunar month</span></td><td><input id='input_month' type="number" value=1></input><br/></td></tr>
-    <tr><td><span>lunar day</span></td><td><input id='input_day' type="number" value=1></input><br/></td></tr>
-    <tr><td><span>event summary</span></td><td><input id='input_event' value="Chinese New Year"></input><br/></td></tr>
-    <tr><td><button id='button_send' class="btn btn-primary" onclick="addEvent()">ADD</button></td></tr>
+    <tr>
+      <th>年</th><th>月</th><th>日</th>
+    </tr>
+    <tr>
+      <th><input id='input_year' value=2013 type="number"></input></th>
+      <th><input id='input_month' type="number" value=1></input></th>
+      <th><input id='input_day' type="number" value=1></input></th>
+    </tr>
     </table>
+    Summary: <input id='input_event' value="Chinese New Year"></input>
+    <button id='button_send' class="btn btn-primary" onclick="addEvent()">ADD</button></td></tr>
   </body>
 </html>
