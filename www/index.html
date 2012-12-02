@@ -23,7 +23,7 @@
     <link rel="stylesheet" type="text/css" href="bootstrap-responsive.css" />
     <link rel="stylesheet" type="text/css" href="prettify.css" />
 
-    <script type="text/javascript" src="lunar.js"></script>
+    <script type="text/javascript" src="lunarmap.js"></script>
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="underscore.js"></script>
     <script type="text/javascript" src="backbone.js"></script>
@@ -134,8 +134,6 @@
     <hr/>
     <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 <script type="text/javascript">
-  var lunarMap = new LunarMap();
-
   function dateToYMD(date) {
     var d = date.getDate();
     var m = date.getMonth()+1;
@@ -161,7 +159,7 @@
     var lMonth = parseInt($('#input_month').val());
     var lDay   = parseInt($('#input_day').val());
     var summary = $('#input_event').val();
-    var date  = lunarMap.l2date(lYear, lMonth, lDay);
+    var date  = LunarMap.l2date(lYear, lMonth, lDay);
     var dateStr = dateToYMD(date);
     // console.log(dateStr);
     gapi.client.load('calendar', 'v3', function() {
@@ -209,7 +207,7 @@
 
 <script type="text/javascript">
   (function(){
-    var d = lunarMap.date2l(new Date());
+    var d = LunarMap.date2l(new Date());
     $('#input_year').val(d[0]);
     $('#input_month').val(d[1]);
     $('#input_day').val(d[2]);

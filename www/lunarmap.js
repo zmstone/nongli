@@ -1,5 +1,9 @@
-function __make_table__(){
-var raw = [
+
+function LunarMap() {
+}
+
+LunarMap.rawMonthTable = function() {
+  return [
 [2000,  2,  5,  1],
 [2000,  3,  6,  2],
 [2000,  4,  5,  3],
@@ -1248,71 +1252,62 @@ var raw = [
 [2100, 11,  2, 10],
 [2100, 12,  1, 11],
 [2100, 12, 31, 12] ];
+};
 
-var i = 0;
-var date = new Date(Date.parse("February 5, 2000")); // raw[0]
-var lYear = 1999;
-var lMonth = 1;
-var lDay = 1;
-var table = new Array();
+LunarMap.d2s = function(Y, M, D){
+  return Y + '-' + M + '-' + D;
+};
 
-for(;;){
-  var gYear  = date.getFullYear();
-  var gMonth = date.getMonth() + 1;
-  var gDay   = date.getDate();
-  if( (gYear  == raw[i][0]) &&
-      (gMonth == raw[i][1]) &&
-      (gDay   == raw[i][2]) ){
-    lMonth = raw[i][3];
-    lDay   = 1;
-    if(lMonth == 1){
-      lYear = lYear + 1;
+LunarMap.makeTable = function(){
+  var raw = LunarMap.rawMonthTable();
+  var date = new Date(Date.parse("February 5, 2000")); // raw[0]
+  var lYear = 1999;
+  var lMonth = 1;
+  var lDay = 1;
+  var tabG2l = {};
+  var tabL2g = {};
+  for(var i=0;;){
+    var gYear  = date.getFullYear();
+    var gMonth = date.getMonth() + 1;
+    var gDay   = date.getDate();
+    if( (gYear  == raw[i][0]) &&
+        (gMonth == raw[i][1]) &&
+        (gDay   == raw[i][2]) ){
+      lMonth = raw[i][3];
+      lDay   = 1;
+      if(lMonth == 1){ lYear = lYear + 1; }
+      i ++;
     }
-    i ++;
+    else {
+      lDay = lDay + 1;
+    }
+    tabG2l[LunarMap.d2s(gYear, gMonth, gDay)] = [lYear, lMonth, lDay];
+    tabL2g[LunarMap.d2s(lYear, lMonth, lDay)] = [gYear, gMonth, gDay];
+    date.setDate(gDay + 1);
+    if(date.getFullYear() > 2100){
+      return { "g2l": tabG2l
+             , "l2g": tabL2g
+            };
+    }
   }
-  else{
-    lDay = lDay + 1;
-  }
-  table.push({
-    "gdate" : [gYear, gMonth, gDay],
-    "ldate" : [lYear, lMonth, lDay]
-  });
-  date.setDate(gDay + 1);
-  if(date.getFullYear() > 2100){
-    return table;
-  }
-}}
-
-function LunarMap() {
-  this.table = __make_table__();
 }
 
-LunarMap.prototype.g2l = function(Y, M, D) {
-  for(var i = 0; i < this.table.length; i ++){
-    var d = this.table[i].gdate;
-    if(Y == d[0] && M == d[1] && D == d[2]){
-      return this.table[i].ldate;
-    }
-  }
-  return null;
+LunarMap.table = LunarMap.makeTable();
+
+LunarMap.g2l = function(Y, M, D) {
+  return LunarMap.table.g2l[LunarMap.d2s(Y, M, D)];
 };
 
-LunarMap.prototype.l2g = function(Y, M, D) {
-  for(var i = 0; i < this.table.length; i ++){
-    var d = this.table[i].ldate;
-    if(Y == d[0] && M == d[1] && D == d[2]){
-      return this.table[i].gdate;
-    }
-  }
-  return null;
+LunarMap.l2g = function(Y, M, D) {
+  return LunarMap.table.l2g[LunarMap.d2s(Y, M, D)];
 };
 
-LunarMap.prototype.date2l = function(d) {
-  return this.g2l(d.getFullYear(), d.getMonth() + 1, d.getDate());
+LunarMap.date2l = function(d) {
+  return LunarMap.g2l(d.getFullYear(), d.getMonth() + 1, d.getDate());
 };
 
-LunarMap.prototype.l2date = function(Y, M, D) {
-  var d = this.l2g(Y, M, D);
+LunarMap.l2date = function(Y, M, D) {
+  var d = LunarMap.l2g(Y, M, D);
   return new Date(d[0], d[1] - 1, d[2]);
-}
+};
 
