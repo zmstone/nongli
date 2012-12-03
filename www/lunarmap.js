@@ -1354,6 +1354,6 @@ LunarMap.dayStr = function(d) {
 
 LunarMap.toStr = function(d) {
   if(!d) return '';
-  return d[0] + "年" + LunarMap.monthStr(d) + LunarMap.dayStr(d);
+  return LunarMap.monthStr(d) + LunarMap.dayStr(d);
 };
 

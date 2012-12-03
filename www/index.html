@@ -20,14 +20,35 @@
     <title>little chinese calendar</title>
 
     <link rel="stylesheet" type="text/css" href="bootstrap.css" />
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
 
     <script type="text/javascript" src="lunarmap.js"></script>
+
     <script type="text/javascript" src="jquery.min.js"></script>
     <script type="text/javascript" src="underscore.js"></script>
     <script type="text/javascript" src="backbone.js"></script>
     <script type="text/javascript" src="handlebars.js"></script>
     <script type="text/javascript" src="bootstrap.js"></script>
+    <script type="text/javascript" src="jquery-ui.js"></script>
+
     <script type="text/javascript" src="main.js"></script>
+    <script>
+    $(function() {
+        // $( "#datepicker" ).datepicker();
+        $( "#datepicker" ).datepicker({
+          minDate: new Date(2000,1,5),
+          maxDate: new Date(2100,11,31),
+          changeMonth: true,
+          changeYear: true,
+          dateFormat: "yy-mm-dd",
+          altField: "#alternate",
+          altFormat: "chinese-lunar",
+          selectOtherMonths: true,
+          showOtherMonths: true
+        });
+    });
+    </script>
+
   </head>
 
   <script type="text/javascript">
@@ -112,6 +133,7 @@
   </script>
 
   <body>
+  <div align="center">
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -123,20 +145,20 @@
     <hr/>
     <!--Add a button for the user to click to initiate auth sequence -->
     <button id="authorize-button" style="visibility: hidden">Authorize</button>
-    <br><b>select from one of your calendars below:</b><br/>
+
+<p>
+  Date: <input type="text" id="datepicker" />&nbsp;
+  <input type="text" id="alternate" size="30" />&nbsp;
+  Event: <input type="text" id='input_event'/>
+</p>
+
     <hr/>
-    <form>
-      <div id="content"></div>
-    </form>
+    <p><b>Add one of my existing calendars:</b></p>
+    <div id="content"></div>
     <hr/>
-    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+<p><button id='button_send' class="btn btn-primary" onclick="addEvent()">ADD</button></p>
+<script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 <script type="text/javascript">
-  function dateToYMD(date) {
-    var d = date.getDate();
-    var m = date.getMonth()+1;
-    var y = date.getFullYear();
-    return '' + y +'-'+ (m<=9?'0'+m:m) +'-'+ (d<=9?'0'+d:d);
-  }
   function getSelectedCalendarId(){
     var L = document.getElementsByName("calendar_selection");
     for(var i = 0; i < L.length; i ++) {
@@ -147,21 +169,12 @@
     return null;
   }
   function addEvent() {
-    var calendarId = getSelectedCalendarId();
-    if(null == calendarId){
-      alert("please select a calendar you want to add events to");
-      return true;
-    }
-    var lYear = parseInt($('#input_year').val());
-    var lMonth = parseInt($('#input_month').val());
-    var lDay   = parseInt($('#input_day').val());
-    var summary = $('#input_event').val();
-    var date  = LunarMap.l2date(lYear, lMonth, lDay);
-    var dateStr = dateToYMD(date);
+    var summary = $('#alternate').val() + '#' + $('#input_event').val();
+    var dateStr = $('#datepicker').val();
     // console.log(dateStr);
     gapi.client.load('calendar', 'v3', function() {
       var requestBody = {
-        "calendarId" : calendarId,
+        "calendarId" : getSelectedCalendarId(),
         "resource": { "summary": summary
                     , "start": { "date": dateStr}
                     , "end"  : { "date": dateStr}
@@ -182,36 +195,9 @@
     });
   }
 </script>
-    <table>
-    <tr>
-      <th>[2000~2099]
-        <input type="checkbox" id="year_checkbox" onchange="yearCheckChange()">每年</input>
-        <input type="number" style="width:30px;" id="year_recur_input" value=10></input>
-      </th>
-      <th>
-        <input type="checkbox" id="month_checkbox" onchange="monthCheckChange()">每月</input>
-      </th>
-      <th>日</th>
-    </tr>
-    <tr>
-      <th><input id='input_year' type="number" value=2012></input></th>
-      <th><input id='input_month' type="number" value=1></input></th>
-      <th><input id='input_day' type="number" value=1></input></th>
-    </tr>
-    </table>
-    Summary: <input id='input_event' value="Chinese New Year"></input>
-    <button id='button_send' class="btn btn-primary" onclick="addEvent()">ADD</button></td></tr>
 
-<script type="text/javascript">
-  (function(){
-    var d = LunarMap.date2l(new Date());
-    $('#input_year').val(d[0]);
-    $('#input_month').val(d[1]);
-    $('#input_day').val(d[2]);
-    return true;
-  })();
-</script>
 
+</div>
   </body>
 </html>
 
