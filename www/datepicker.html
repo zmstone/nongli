@@ -1,0 +1,36 @@
+<!doctype html>
+ 
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>jQuery UI Datepicker - Default functionality</title>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="prettify.css" />
+    <script src="jquery.min.js"></script>
+    <script src="lunarmap.js"></script>
+    <script src="jquery-ui.js"></script>
+    <script>
+    $(function() {
+        // $( "#datepicker" ).datepicker();
+        $( "#datepicker" ).datepicker({
+          minDate: new Date(2000,1,5),
+          maxDate: new Date(2100,11,31),
+          changeMonth: true,
+          changeYear: true,
+          dateFormat: "yy-mm-dd",
+          altField: "#alternate",
+          altFormat: "chinese-lunar",
+          selectOtherMonths: true,
+          showOtherMonths: true
+        });
+    });
+    </script>
+</head>
+<body>
+
+<p>Date: <input type="text" id="datepicker" />&nbsp;<input type="text" id="alternate" size="30" /></p>
+
+</body>
+</html>

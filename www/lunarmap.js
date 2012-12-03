@@ -1311,3 +1311,49 @@ LunarMap.l2date = function(Y, M, D) {
   return new Date(d[0], d[1] - 1, d[2]);
 };
 
+LunarMap.special = function(d) {
+  if(!d) return "";
+  // chu xi ?
+  if(d[1] == 12 && d[2] == 29){
+    var date = LunarMap.l2date(d[0], d[1], d[2]);
+    date.setDate(date.getDate() + 1);
+    var d2 = LunarMap.date2l(date);
+    if(d2[2] == 1) return "除夕";
+    else return "";
+  }
+  var str = d[1] + '-' + d[2];
+  var specialMap = {
+    '1-1': '春节',
+    '1-15': '元宵',
+    '5-5': '端午',
+    '7-7': '七夕',
+    '7-15': '中元',
+    '8-15': '中秋',
+    '9-9': '重阳',
+    '12-8': '腊八',
+  };
+  var result = specialMap[str];
+  if(!result) return "";
+  return result;
+};
+
+LunarMap.monthStr = function(d) {
+  var months = ["正","二","三","四","五","六",
+    "七","八","九","十","冬","腊"];
+  return months[d[1]-1] + '月';
+};
+
+LunarMap.dayStr = function(d) {
+  var days = ["初一","初二","初三","初四","初五",
+    "初六","初七","初八","初九","初十","十一",
+    "十二", "十三","十四","十五","十六","十七",
+    "十八","十九", "二十","廿一","廿二","廿三",
+    "廿四","廿五","廿六","廿七","廿八","廿九","三十"];
+  return days[d[2] - 1];
+}
+
+LunarMap.toStr = function(d) {
+  if(!d) return '';
+  return d[0] + "年" + LunarMap.monthStr(d) + LunarMap.dayStr(d);
+};
+
