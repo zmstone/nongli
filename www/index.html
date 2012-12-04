@@ -17,9 +17,9 @@
 <html>
   <head>
     <meta charset='utf-8' />
-    <title>little chinese calendar</title>
+    <title>Google Calendar 农历</title>
 
-    <link rel="stylesheet" type="text/css" href="bootstrap.css" />
+    <link rel="stylesheet" href="bootstrap.css"/>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
 <style>
 th{
@@ -29,19 +29,14 @@ th{
 </style>
 
     <script type="text/javascript" src="lunarmap.js"></script>
-
     <script type="text/javascript" src="jquery.min.js"></script>
-    <script type="text/javascript" src="underscore.js"></script>
-    <script type="text/javascript" src="backbone.js"></script>
-    <script type="text/javascript" src="handlebars.js"></script>
     <script type="text/javascript" src="bootstrap.js"></script>
     <script type="text/javascript" src="jquery-ui.js"></script>
 
-    <script type="text/javascript" src="main.js"></script>
     <script>
     $(function() {
         // $( "#datepicker" ).datepicker();
-        $( "#datepicker" ).datepicker({
+        $("#datepicker" ).datepicker({
           minDate: new Date(2000,1,5),
           maxDate: new Date(2100,11,31),
           changeMonth: true,
@@ -49,8 +44,6 @@ th{
           dateFormat: "yy-mm-dd",
           altField: "#alternate",
           altFormat: "chinese-lunar",
-          //selectOtherMonths: true,
-          //showOtherMonths: true
         });
     });
     </script>
@@ -58,7 +51,9 @@ th{
   </head>
 
   <script type="text/javascript">
+
     <!--global variable is bad-->
+    <!--yes, but what are you gonna do about it-->
     window.cal_result;
 
     // Enter a client ID for a web application from the Google Developer Console.
@@ -124,9 +119,11 @@ th{
                         calendars.push(allCalendars[i]);
                       }
                     };
-                    cal_app = new AppView();
-                    cal_app.start(calendars);
-                    cal_app.render();
+                    for(var i=0; i < calendars.length; ++i){
+                      var text = calendars[i].summary + '(' + calendars[i].id+ ')';
+                      var Opt = new Option(text, calendars[i].id);
+                      $('#calendar_select').append(Opt);
+                    }
                 }
                 else{
                     alert(resp);
@@ -142,7 +139,7 @@ th{
       <div class="navbar-inner">
         <div class="container">
           <!-- show the app name -->
-          <a class="brand" href="#">little chinese calendar</a>
+          <a class="brand" href="#">添加农历日期和事件到 Google Calendar</a>
         </div>
       </div>
     </div>
@@ -151,45 +148,47 @@ th{
     <button id="authorize-button" style="visibility: hidden">Authorize</button>
 
 <p>
-  Date: <input type="text" id="datepicker" />&nbsp;
+
+  *选择日期&nbsp;<input type="text" id="datepicker" />&nbsp;
   <input type="text" id="alternate" size="30" />&nbsp;
-  Event: <input type="text" id='input_event'/>
+  事件摘要&nbsp;<input type="text" id='input_event'/>
 </p>
 
-    <hr/>
-    <p>Add to one of my existing calendars:</p>
-    <table id="calendar_list" border="1">
-      <thead>
-        <tr> <th>Choose</th> <th>Name</th> <th>ID</th> </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
-    <div id="new_calendar_div">click to create a new calendar</div>
-    <hr/>
-<p><button id='button_send' class="btn btn-primary" onclick="addEvent()">ADD</button></p>
+<hr/>
+<div>
+  *添加到日历&nbsp;<select id="calendar_select"></select>
+  &nbsp;或&nbsp;<a href="#">新建一个日历</a>
+<div>
+<hr/>
+
+<p><button id='button_send' class="btn btn-primary" onclick="addEvent()">哦啦</button></p>
+
 <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 <script type="text/javascript">
-  function getSelectedCalendarId(){
-    var L = document.getElementsByName("calendar_selection");
-    for(var i = 0; i < L.length; i ++) {
-      if(L[i].checked){
-        return L[i].id;
-      }
-    }
-    return null;
+
+  function newCalendar() {
   }
+
   function addEvent() {
+    var calendarId = $('#calendar_select').val();
+    if(!calendarId) {
+      alert("please select your calender");
+      return true;
+    }
+    var dateStr = $('#datepicker').val();
+    if(!dateStr){
+      alert("please select date");
+      return true;
+    }
     var summary = $('#alternate').val();
     var eventstr = $('#input_event').val();
     if(eventstr != ''){
       summary = summary + '#' + eventstr;
     }
-    var dateStr = $('#datepicker').val();
     // console.log(dateStr);
     gapi.client.load('calendar', 'v3', function() {
       var requestBody = {
-        "calendarId" : getSelectedCalendarId(),
+        "calendarId": calendarId,
         "resource": { "summary": summary
                     , "start": { "date": dateStr}
                     , "end"  : { "date": dateStr}
@@ -210,7 +209,6 @@ th{
     });
   }
 </script>
-
 
 </div>
   </body>
