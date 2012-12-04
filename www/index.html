@@ -110,15 +110,13 @@
                 //'calendarId': 'zmstone@gmail.com'
             });
             request.execute(function(resp){
-                var calendars = resp.items;
-                if(calendars){
-                    for(var i=0; i<calendars.length; i ++){
-                        /*
-                        console.log("summary:");
-                        console.log(i + ": " + calendars[i].summary);
-                        console.log("id:");
-                        console.log(i + ": " + calendars[i].id);
-                        */
+                var allCalendars = resp.items;
+                var calendars = [];
+                if(allCalendars){
+                    for(var i=0; i < allCalendars.length; i ++){
+                      if(allCalendars[i].accessRole == "owner"){
+                        calendars.push(allCalendars[i]);
+                      }
                     };
                     cal_app = new AppView();
                     cal_app.start(calendars);
