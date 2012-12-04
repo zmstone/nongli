@@ -44,8 +44,7 @@ $(document).ready(function() {
     });
 
     var CalendarListView = Backbone.View.extend({
-        tagName: "table",
-
+        tagName: "tbody",
         render: function() {
             var self = this;
             self.$el.empty();
@@ -58,7 +57,7 @@ $(document).ready(function() {
     });
 
     AppView = Backbone.View.extend({
-        el: $("#content"),
+        el: $("#calendar_list"),
         cache: {},
 
         loadTemplate: function(name) {
@@ -79,7 +78,8 @@ $(document).ready(function() {
             var view = new CalendarListView({model: calendarlist});
 
             var rendered_view = view.render();
-            $('#content').html(rendered_view.el);
+            $('#calendar_list > tbody').empty();
+            $('#calendar_list').append(rendered_view.el);
             window.prettyPrint && prettyPrint();
             return this;
         },

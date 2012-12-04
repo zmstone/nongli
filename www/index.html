@@ -21,6 +21,12 @@
 
     <link rel="stylesheet" type="text/css" href="bootstrap.css" />
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+<style>
+th{
+  font-weight: normal;
+  text-align: center;
+}
+</style>
 
     <script type="text/javascript" src="lunarmap.js"></script>
 
@@ -43,8 +49,8 @@
           dateFormat: "yy-mm-dd",
           altField: "#alternate",
           altFormat: "chinese-lunar",
-          selectOtherMonths: true,
-          showOtherMonths: true
+          //selectOtherMonths: true,
+          //showOtherMonths: true
         });
     });
     </script>
@@ -151,8 +157,15 @@
 </p>
 
     <hr/>
-    <p><b>Add one of my existing calendars:</b></p>
-    <div id="content"></div>
+    <p>Add to one of my existing calendars:</p>
+    <table id="calendar_list" border="1">
+      <thead>
+        <tr> <th>Choose</th> <th>Name</th> <th>ID</th> </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <div id="new_calendar_div">click to create a new calendar</div>
     <hr/>
 <p><button id='button_send' class="btn btn-primary" onclick="addEvent()">ADD</button></p>
 <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
@@ -167,7 +180,11 @@
     return null;
   }
   function addEvent() {
-    var summary = $('#alternate').val() + '#' + $('#input_event').val();
+    var summary = $('#alternate').val();
+    var eventstr = $('#input_event').val();
+    if(eventstr != ''){
+      summary = summary + '#' + eventstr;
+    }
     var dateStr = $('#datepicker').val();
     // console.log(dateStr);
     gapi.client.load('calendar', 'v3', function() {
