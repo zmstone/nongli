@@ -1313,7 +1313,7 @@ LunarMap.l2date = function(Y, M, D) {
 
 LunarMap.special = function(d) {
   if(!d) return "";
-  // chu xi ?
+  // 腊月廿九的除夕
   if(d[1] == 12 && d[2] == 29){
     var date = LunarMap.l2date(d[0], d[1], d[2]);
     date.setDate(date.getDate() + 1);
@@ -1331,6 +1331,7 @@ LunarMap.special = function(d) {
     '8-15': '中秋',
     '9-9': '重阳',
     '12-8': '腊八',
+    '12-30': '除夕'
   };
   var result = specialMap[str];
   if(!result) return "";
