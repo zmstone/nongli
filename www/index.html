@@ -113,12 +113,19 @@ th{
             request.execute(function(resp){
                 var allCalendars = resp.items;
                 var calendars = [];
+                var nongliCalendars = [];
                 if(allCalendars){
                     for(var i=0; i < allCalendars.length; i ++){
                       if(allCalendars[i].accessRole == "owner"){
-                        calendars.push(allCalendars[i]);
+                        if(allCalendars[i].summary.indexOf("农历") >= 0){
+                          nongliCalendars.push(allCalendars[i]);
+                        }
+                        else{
+                          calendars.push(allCalendars[i]);
+                        }
                       }
-                    };
+                    }
+                    calendars = nongliCalendars.concat(calendars);
                     for(var i=0; i < calendars.length; ++i){
                       var text = calendars[i].summary + '(' + calendars[i].id+ ')';
                       var Opt = new Option(text, calendars[i].id);
@@ -157,7 +164,7 @@ th{
 <hr/>
 <div>
   *添加到日历&nbsp;<select id="calendar_select"></select>
-  &nbsp;或&nbsp;<a href="#">新建一个日历</a>
+  &nbsp;或&nbsp;<a onclick="newCalendar()" href="#">新建一个日历</a>
 <div>
 <hr/>
 
@@ -167,6 +174,30 @@ th{
 <script type="text/javascript">
 
   function newCalendar() {
+    gapi.client.load('calendar', 'v3', function() {
+      var requestBody = {
+        "resource": { "summary": "农历" }
+      };
+      var request = gapi.client.calendar.calendars.insert(requestBody);
+      request.execute(function(resp){
+        // console.log(resp);
+        if(resp.code == undefined){
+          var text = resp.summary + '(' + resp.id + ')';
+          alert(text + ' is created');
+          var Opt = new Option(text, resp.id);
+          //console.log($('#calendar_select')[0].options);
+          var select = $('#calendar_select')[0];
+          select.options.add(Opt, 0);
+          select.selectedIndex = 0;
+          return true;
+        }
+        else{
+          alert('failed, reason: ' + resp.code + ',' + resp.message);
+          return false;
+        }
+      });
+      return true;
+    });
   }
 
   function addEvent() {
@@ -196,12 +227,13 @@ th{
       };
       var request = gapi.client.calendar.events.insert(requestBody);
       request.execute(function(resp){
+        //console.log(resp);
         if(resp.code == undefined){
+          alert('event ' + resp.summary + ' added');
           return true;
         }
         else{
           alert('failed, reason: ' + resp.code + ',' + resp.message);
-          console.log(resp);
           return false;
         }
       });
