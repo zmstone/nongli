@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
     <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css"/>
 
+    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
     <script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
     <script type="text/javascript" src="lunarmap.js"></script>
@@ -29,7 +30,6 @@
 
     <script>
     $(function() {
-        // $( "#datepicker" ).datepicker();
         $("#datepicker" ).datepicker({
           minDate: new Date(2000,1,5),
           maxDate: new Date(2100,11,31),
@@ -162,7 +162,6 @@
 
 <p><button id='button_send' class="btn btn-primary" onclick="addEvent()">哦啦</button></p>
 
-<script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 <script type="text/javascript">
 
   function newCalendar() {

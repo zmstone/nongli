@@ -2,16 +2,68 @@
 <html>
   <head>
     <meta charset='utf-8'/>
-    <title>Google Calendar 农历</title>
+    <title>农历-> Google Calendar</title>
 
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
     <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css"/>
+    <style type="text/css">
+      body {
+        padding-top: 10px;
+        padding-bottom: 20px;
+      }
+      .container {
+        margin: 0 auto;
+        max-width: 800px;
+      }
+      .container > hr {
+        margin: 10px 0;
+      }
+      #div_before_authorize {
+        margin: 60px 0;
+        text-align: center;
+        visibility: hidden;
+      }
+      #div_main {
+        visibility: hidden;
+      }
+    </style>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
     <script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
-    <script type="text/javascript" src="lunarmap.js"></script>
-    <script type="text/javascript" src="jquery-ui.js"></script>
 
     <script type="text/javascript" src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
     <script type="text/javascript" src="http://documentcloud.github.com/backbone/backbone-min.js"></script>
+
+    <script type="text/javascript" src="lunarmap.js"></script>
+    <script type="text/javascript" src="jquery-ui-1.9.2.js"></script>
+  </head>
+
+  <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+  <script type="text/javascript">
+
+  </script>
+
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="#">?</a></li>
+        </ul>
+        <h3 class="muted">农历-> Google Calendar</h3>
+      </div>
+      <hr>
+      <div id="div_before_authorize">
+        <p class="lead">编辑农历日期和事件并添加到 Google Calendar</p>
+        <a class="btn btn-large btn-success" href="#">Authorize</a>
+      </div>
+      <div id="div_main">
+        <p class="lead">TODO</p>
+      </div>
+      <hr>
+      <div class="footer">
+        <p style="float:right;">zmstone艾特gmail.com</p>
+      </div>
+    </div>
+  </body>
+</html>
 
