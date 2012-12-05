@@ -174,16 +174,20 @@ th{
 <script type="text/javascript">
 
   function newCalendar() {
+    var summary = prompt("新建日历名称", "农历");
+    if(!summary){
+      return true;
+    }
     gapi.client.load('calendar', 'v3', function() {
       var requestBody = {
-        "resource": { "summary": "农历" }
+        "resource": { "summary": summary }
       };
       var request = gapi.client.calendar.calendars.insert(requestBody);
       request.execute(function(resp){
         // console.log(resp);
         if(resp.code == undefined){
           var text = resp.summary + '(' + resp.id + ')';
-          alert(text + ' is created');
+          alert('创建成功：' + text);
           var Opt = new Option(text, resp.id);
           //console.log($('#calendar_select')[0].options);
           var select = $('#calendar_select')[0];
@@ -229,7 +233,7 @@ th{
       request.execute(function(resp){
         //console.log(resp);
         if(resp.code == undefined){
-          alert('event ' + resp.summary + ' added');
+          alert('添加成功：' + resp.summary);
           return true;
         }
         else{
