@@ -8109,8 +8109,7 @@ $.extend(Datepicker.prototype, {
 			return;
 		}
 		var inst = this._getInst(target[0]);
-		inst.selectedDay = inst.currentDay = parseInt($('a', td).html());
-    // console.log(parseInt(inst.selectedDay));
+		inst.selectedDay = inst.currentDay = parseInt($('a', td).html(), 10);
 		inst.selectedMonth = inst.currentMonth = month;
 		inst.selectedYear = inst.currentYear = year;
 		this._selectDate(id, this._formatDate(inst,
@@ -8797,42 +8796,39 @@ $.extend(Datepicker.prototype, {
 							((!otherMonth || showOtherMonths) && daySettings[2] ? ' title="' + daySettings[2] + '"' : '') + // cell title
 							(unselectable ? '' : ' data-handler="selectDay" data-event="click" data-month="' + printDate.getMonth() + '" data-year="' + printDate.getFullYear() + '"') + '>' + // actions
 							(otherMonth && !showOtherMonths ? '&#xa0;' : // display for other months
-							(unselectable ? '<span class="ui-state-default">' + printDate.getDate() +
-                            '</span>' : '<a class="ui-state-default' +
+							(unselectable ? '<span class="ui-state-default">' + printDate.getDate() + '</span>' : '<a class="ui-state-default' +
 							(printDate.getTime() == today.getTime() ? ' ui-state-highlight' : '') +
 							(printDate.getTime() == currentDate.getTime() ? ' ui-state-active' : '') + // highlight selected day
 							(otherMonth ? ' ui-priority-secondary' : '') + // distinguish dates from other months
 							'" href="#">' +
               (function(){
-                if(printDate.getDate() < 10) return "0";
-                return "";
-              }()) +
-              printDate.getDate() +
+                var d = printDate.getDate();
+                if(d < 10) return '0' + d;
+                else return d;
+              })() +
               '</a>' +
-                (function(){
-                  var d = LunarMap.date2l(printDate);
-                  var lunarStr = LunarMap.special(d);
-                  var isSpecial = false;
-                  if(lunarStr == ''){
-                    if(d[2] == 1){
-                      lunarStr = LunarMap.monthStr(d);
-                      isSpecial = true;
-                    }
-                    else{
-                      lunarStr = LunarMap.dayStr(d);
-                    }
-                  }
-                  else{
+              (function(){
+                var d = LunarMap.date2l(printDate);
+                var lunarStr = LunarMap.special(d);
+                var isSpecial = false;
+                if(lunarStr == ''){
+                  if(d[2] == 1){
+                    lunarStr = LunarMap.monthStr(d);
                     isSpecial = true;
                   }
-                  if(isSpecial){
-                    return '<font color="red">' + lunarStr + '</font>';
-                  }
                   else{
-                    return lunarStr;
+                    lunarStr = LunarMap.dayStr(d);
                   }
-                 })() +
-            '')) + '</td>'; // display selectable date
+                }
+                else{
+                  isSpecial = true;
+                }
+                if(isSpecial){
+                  return '<font color="red">' + lunarStr + '</font>';
+                }
+                return lunarStr;
+              })() +
+              '')) + '</td>'; // display selectable date
 						printDate.setDate(printDate.getDate() + 1);
 						printDate = this._daylightSavingAdjust(printDate);
 					}
