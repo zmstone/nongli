@@ -83,9 +83,6 @@
   <script type="text/javascript">
 
   var Calendar = Backbone.Model.extend({
-    defaults: {
-      timestamp: Date.now(), // for sorting
-    },
     toString: function(){
       return this.get('summary') + '(' + this.id + ')';
     },
@@ -114,11 +111,13 @@
       var self = this;
       gapi.client.load('calendar', 'v3', function() {
         var request = gapi.client.calendar.calendarList.list({});
+        var now     = Date.now();
         request.execute(function(resp){
           var calendars = resp.items;
           if(calendars){
             for(var i = 0; i < calendars.length; i ++){
               if(calendars[i].accessRole == "owner"){
+                calendars[i].timestamp = now;
                 self.push(calendars[i]);
               }
             }
@@ -151,11 +150,12 @@
           var text = '' + this.collection.models[i];
           this.$el.append(new Option(text, id));
         }
-        $('#icon_loading').hide();
         div.empty();
-        div.append('<span>*添加到日历&nbsp;</span>');
+        div.append('*添加到日历&nbsp;');
         div.append(this.$el);
-        div.append('<span>&nbsp;或&nbsp;<a onclick="CalendarList.newCalendar()" href="#">新建一个日历</a>');
+        div.append('&nbsp;或&nbsp;');
+        div.append('<button class="btn" onclick="CalendarList.newCalendar()">新建一个日历</button>');
+        div.append('<img id="icon_loading"src="loading.gif" style="display: none"/>');
       }
       else{
       }
@@ -178,14 +178,15 @@
     $('#icon_loading').show();
     request.execute(function(resp){
       if(resp.code == undefined){
+        resp.timestamp = Date.now();
         var calendar = new Calendar(resp);
         collection.add(calendar).sort();
-        $('#icon_loading').hide();
       }
       else{
         alert('failed, reason: ' + resp.code + ',' + resp.message);
         return false;
       }
+      $('#icon_loading').hide();
     });
     return true;
   };
@@ -219,8 +220,7 @@
           <a class="btn btn-large btn-success" href="#" onclick="doAuthorize(false)">Authorize</a>
         </div>
         <div id="div_auth_ok">
-          <img id='icon_loading' src="loading.gif"></img>
-          <div id="div_calendar_list"></div>
+          <div id="div_calendar_list"><img src="loading.gif"></img></div>
           <div id='div_datepicker'>
             *选择日期&nbsp;<input type="text" id="datepicker" />&nbsp;
             <input type="text" id="datepicker_alternate" size="30" />
