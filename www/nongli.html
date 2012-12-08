@@ -81,6 +81,81 @@
   <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=gapiLoaded"></script>
 
   <script type="text/javascript">
+
+  var Calendar = Backbone.Model.extend({
+  });
+
+  var CalendarList = Backbone.Collection.extend({
+    model: Calendar,
+    errMsg: '',
+    initialize: function() {
+      _.bindAll(this, "fetch");
+      auth.bind("change", this.fetch);
+    },
+    fetch: function() {
+      var self = this;
+      gapi.client.load('calendar', 'v3', function() {
+        var request = gapi.client.calendar.calendarList.list({});
+        request.execute(function(resp){
+          var calendars = resp.items;
+          if(calendars){
+            for(var i = 0; i < calendars.length; i ++){
+              if(calendars[i].accessRole == "owner"){
+                self.push(calendars[i]);
+              }
+            }
+          }
+          else{
+            self.errMsg = 'failed to fetch calendars: ' +
+                          resp.code + ', ' + resp.message;
+            alert(self.errMsg);
+          }
+        })
+      })
+    },
+  });
+
+  var CalendarListView = Backbone.View.extend({
+    tagName: 'select',
+    initialize: function() {
+      _.bindAll(this, "render");
+      this.collection.bind('all', this.render);
+    },
+    render: function(){
+      if(this.collection.errMsg == ''){
+        var div = $('#div_calendar_list');
+        this.$el.empty();
+        for(var i = 0; i < this.collection.length; i ++){
+          var summary = this.collection.models[i].get('summary');
+          var id      = this.collection.models[i].id;
+          var text    = summary + '(' + id + ')';
+          this.$el.append(new Option(text, id));
+        }
+        div.empty();
+        div.append('<span>*添加到日历&nbsp;</span>');
+        div.append(this.$el);
+        div.append('<span>&nbsp;或&nbsp;<a onclick="newCalendar()" href="#">新建一个日历</a>');
+      }
+      else{
+      }
+      return this;
+    },
+  });
+
+  var calendarListView = new CalendarListView({collection: new CalendarList()});
+
+  $(function() {
+    $("#datepicker" ).datepicker({
+      minDate: new Date(2000,1,5),
+      maxDate: new Date(2100,11,31),
+      changeMonth: true,
+      changeYear: true,
+      dateFormat: "yy-mm-dd",
+      altField: "#datepicker_alternate",
+      altFormat: "chinese-lunar",
+    });
+  });
+
   </script>
 
   <body>
@@ -97,8 +172,14 @@
           <p class="lead">编辑农历日期和事件并添加到 Google Calendar<br/></p>
           <a class="btn btn-large btn-success" href="#" onclick="doAuthorize(false)">Authorize</a>
         </div>
-        <div id="div_auth_ok" style="display: none;">
-          <p class="lead">TODO</p>
+        <div id="div_auth_ok">
+          <div id="div_calendar_list">
+            <img src="loading.gif"></img>
+          </div>
+          <div id='div_datepicker'>
+            *选择日期&nbsp;<input type="text" id="datepicker" />&nbsp;
+            <input type="text" id="datepicker_alternate" size="30" />
+          </div>
         </div>
       </div>
       <hr>

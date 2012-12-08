@@ -22,7 +22,6 @@
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
     <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css"/>
 
-    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
     <script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
     <script type="text/javascript" src="lunarmap.js"></script>
@@ -36,7 +35,7 @@
           changeMonth: true,
           changeYear: true,
           dateFormat: "yy-mm-dd",
-          altField: "#alternate",
+          altField: "#datepicker_alternate",
           altFormat: "chinese-lunar",
         });
     });
@@ -133,6 +132,7 @@
         });
     };
   </script>
+  <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 
   <body>
   <div align="center">
