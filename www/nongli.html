@@ -83,6 +83,24 @@
   <script type="text/javascript">
 
   var Calendar = Backbone.Model.extend({
+    defaults: {
+      timestamp: Date.now(), // for sorting
+    },
+    toString: function(){
+      return this.get('summary') + '(' + this.id + ')';
+    },
+    isNongli: function(){
+      return this.get('summary').indexOf("农历") >= 0;
+    },
+    compareTo: function(other){
+      if(this.isNongli()){
+        if(other.isNongli()){
+          return this.get('timestamp') > other.get('timestamp') ? -1 : 1;
+        }
+        return -1;
+      }
+      return 1;
+    },
   });
 
   var CalendarList = Backbone.Collection.extend({
@@ -113,6 +131,9 @@
         })
       })
     },
+    comparator: function(a, b){
+      return a.compareTo(b);
+    },
   });
 
   var CalendarListView = Backbone.View.extend({
@@ -126,15 +147,15 @@
         var div = $('#div_calendar_list');
         this.$el.empty();
         for(var i = 0; i < this.collection.length; i ++){
-          var summary = this.collection.models[i].get('summary');
-          var id      = this.collection.models[i].id;
-          var text    = summary + '(' + id + ')';
+          var id   = this.collection.models[i].id;
+          var text = '' + this.collection.models[i];
           this.$el.append(new Option(text, id));
         }
+        $('#icon_loading').hide();
         div.empty();
         div.append('<span>*添加到日历&nbsp;</span>');
         div.append(this.$el);
-        div.append('<span>&nbsp;或&nbsp;<a onclick="newCalendar()" href="#">新建一个日历</a>');
+        div.append('<span>&nbsp;或&nbsp;<a onclick="CalendarList.newCalendar()" href="#">新建一个日历</a>');
       }
       else{
       }
@@ -143,6 +164,31 @@
   });
 
   var calendarListView = new CalendarListView({collection: new CalendarList()});
+
+  CalendarList.newCalendar = function(){
+    var collection = calendarListView.collection;
+    var summary = prompt("新建日历名称", "农历");
+    if(!summary){
+      return true;
+    }
+    var resource = {
+      "resource": { "summary": summary }
+    };
+    var request = gapi.client.calendar.calendars.insert(resource);
+    $('#icon_loading').show();
+    request.execute(function(resp){
+      if(resp.code == undefined){
+        var calendar = new Calendar(resp);
+        collection.add(calendar).sort();
+        $('#icon_loading').hide();
+      }
+      else{
+        alert('failed, reason: ' + resp.code + ',' + resp.message);
+        return false;
+      }
+    });
+    return true;
+  };
 
   $(function() {
     $("#datepicker" ).datepicker({
@@ -173,9 +219,8 @@
           <a class="btn btn-large btn-success" href="#" onclick="doAuthorize(false)">Authorize</a>
         </div>
         <div id="div_auth_ok">
-          <div id="div_calendar_list">
-            <img src="loading.gif"></img>
-          </div>
+          <img id='icon_loading' src="loading.gif"></img>
+          <div id="div_calendar_list"></div>
           <div id='div_datepicker'>
             *选择日期&nbsp;<input type="text" id="datepicker" />&nbsp;
             <input type="text" id="datepicker_alternate" size="30" />
