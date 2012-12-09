@@ -82,6 +82,17 @@
 
   <script type="text/javascript">
 
+$(function() {
+  $("#datepicker").datepicker({
+    minDate: new Date(2000,1,5),
+    maxDate: new Date(2100,11,31),
+    changeMonth: true,
+    changeYear: true,
+    dateFormat: "yy-mm-dd",
+    altField: "#datepicker_alternate",
+    altFormat: "chinese-lunar",
+  });
+
   var Calendar = Backbone.Model.extend({
     toString: function(){
       return this.get('summary') + '(' + this.id + ')';
@@ -136,73 +147,79 @@
   });
 
   var CalendarListView = Backbone.View.extend({
-    tagName: 'select',
+    el: $('#div_calendar_list'),
+    events: {
+      'click #btn_new_calendar': 'newCalendar',
+    },
     initialize: function() {
       _.bindAll(this, "render");
       this.collection.bind('all', this.render);
     },
     render: function(){
       if(this.collection.errMsg == ''){
-        var div = $('#div_calendar_list');
-        this.$el.empty();
+        var select = $('#sel_calendars');
+        select.empty();
         for(var i = 0; i < this.collection.length; i ++){
           var id   = this.collection.models[i].id;
           var text = '' + this.collection.models[i];
-          this.$el.append(new Option(text, id));
+          select.append(new Option(text, id));
         }
-        div.empty();
-        div.append('*添加到日历&nbsp;');
-        div.append(this.$el);
-        div.append('&nbsp;或&nbsp;');
-        div.append('<a class="btn" onclick="CalendarList.newCalendar()">新建一个日历</a>');
-        div.append('<img id="icon_loading"src="loading.gif" style="display: none"/>');
+        $('#span_calendars').show();
+        $('#icon_loading').hide();
       }
       else{
         alert(this.collection.errMsg);
       }
-      return this;
     },
+    newCalendar: function(){
+      var summary = prompt("新建日历名称", "农历");
+      if(!summary){ return false; }
+      var resource = {
+        "resource": { "summary": summary }
+      };
+      var request = gapi.client.calendar.calendars.insert(resource);
+      var collection = this.collection;
+      $('#icon_loading').show();
+      request.execute(function(resp){
+        if(resp.code == undefined){
+          resp.timestamp = Date.now();
+          var calendar = new Calendar(resp);
+          collection.add(calendar);
+        }
+        else{
+          alert('failed, reason: ' + resp.code + ',' + resp.message);
+          return false;
+        }
+        $('#icon_loading').hide();
+      });
+      return true;
+    }
   });
 
   var calendarListView = new CalendarListView({collection: new CalendarList()});
 
-  CalendarList.newCalendar = function(){
-    var collection = calendarListView.collection;
-    var summary = prompt("新建日历名称", "农历");
-    if(!summary){
-      return true;
-    }
-    var resource = {
-      "resource": { "summary": summary }
-    };
-    var request = gapi.client.calendar.calendars.insert(resource);
-    $('#icon_loading').show();
-    request.execute(function(resp){
-      if(resp.code == undefined){
-        resp.timestamp = Date.now();
-        var calendar = new Calendar(resp);
-        collection.add(calendar).sort();
-      }
-      else{
-        alert('failed, reason: ' + resp.code + ',' + resp.message);
-        return false;
-      }
-      $('#icon_loading').hide();
-    });
-    return true;
-  };
-
-  $(function() {
-    $("#datepicker" ).datepicker({
-      minDate: new Date(2000,1,5),
-      maxDate: new Date(2100,11,31),
-      changeMonth: true,
-      changeYear: true,
-      dateFormat: "yy-mm-dd",
-      altField: "#datepicker_alternate",
-      altFormat: "chinese-lunar",
-    });
+  var Recurrence = Backbone.Model.extend({
+    defaults: {
+      selected  : false,
+      frequency : 0,
+      unit      : "年",
+      endDate   : new Date(),
+    },
   });
+
+  var RecurrenceView = Backbone.View.extend({
+    el: $('#div_recurrence'),
+    events: {
+      'click #btn_a': 'update',
+    },
+    update: function(){
+      alert('here we go');
+    }
+  });
+
+  var recurrenceView = new RecurrenceView({model: new Recurrence()});
+
+});
 
   </script>
 
@@ -221,10 +238,21 @@
           <a class="btn btn-large btn-success" href="#" onclick="doAuthorize(false)">Authorize</a>
         </div>
         <div id="div_auth_ok">
-          <div id="div_calendar_list"><img src="loading.gif"></img></div>
+          <div id="div_calendar_list">
+            <span id='span_calendars' style="display: none;">
+              *添加到日历&nbsp;&nbsp;
+              <select id='sel_calendars'></select>
+              或&nbsp;
+              <button id="btn_new_calendar" class="btn">新建一个日历</button>
+            </span>
+            <img id="icon_loading" src="loading.gif"/>
+          </div>
           <div id='div_datepicker'>
             *选择日期&nbsp;<input type="text" id="datepicker" />&nbsp;
             <input type="text" id="datepicker_alternate" size="30" />
+          </div>
+          <div id='div_recurrence'>
+            <button id='btn_a'>abc</button>
           </div>
         </div>
       </div>
@@ -234,5 +262,6 @@
       </div>
     </div>
   </body>
+
 </html>
 
