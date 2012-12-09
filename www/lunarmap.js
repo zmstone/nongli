@@ -1363,8 +1363,16 @@ LunarMap.dayStr = function(d) {
   return days[d[2] - 1];
 }
 
-LunarMap.toStr = function(d) {
+LunarMap.toFullStr = function(d){
   if(!d) return '';
   return LunarMap.yearStr(d) + LunarMap.monthStr(d) + LunarMap.dayStr(d);
 };
+
+LunarMap.toStr = function(d) {
+  if(!d) return '';
+  return LunarMap.monthStr(d) + LunarMap.dayStr(d);
+};
+
+LunarMap.minDate = function(){return new Date(2000,1,5)};
+LunarMap.maxDate = function(){return new Date(2100,12,30)};
 
