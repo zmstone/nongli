@@ -1338,6 +1338,16 @@ LunarMap.special = function(d) {
   return result;
 };
 
+LunarMap.yearStr = function(d){
+  var gan = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+  var zhi = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+  var ganzhi = [];
+  for(var i = 0; i < 60; i++){
+    ganzhi.push(gan[i % gan.length] + zhi[i % zhi.length]);
+  }
+  return ganzhi[(d[0] - 1984) % 60] + '年'; // 1984 = 甲子
+};
+
 LunarMap.monthStr = function(d) {
   var months = ["正","二","三","四","五","六",
     "七","八","九","十","冬","腊"];
@@ -1355,6 +1365,6 @@ LunarMap.dayStr = function(d) {
 
 LunarMap.toStr = function(d) {
   if(!d) return '';
-  return LunarMap.monthStr(d) + LunarMap.dayStr(d);
+  return LunarMap.yearStr(d) + LunarMap.monthStr(d) + LunarMap.dayStr(d);
 };
 

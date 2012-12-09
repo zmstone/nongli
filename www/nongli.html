@@ -11,6 +11,11 @@
         padding-top: 10px;
         padding-bottom: 20px;
       }
+      table{
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
       .container {
         margin: 0 auto;
         max-width: 800px;
@@ -78,20 +83,32 @@
   }
 
   </script>
+
   <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=gapiLoaded"></script>
 
   <script type="text/javascript">
 
 $(function() {
-  $("#datepicker").datepicker({
-    minDate: new Date(2000,1,5),
-    maxDate: new Date(2100,11,31),
-    changeMonth: true,
-    changeYear: true,
-    dateFormat: "yy-mm-dd",
-    altField: "#datepicker_alternate",
-    altFormat: "chinese-lunar",
-  });
+  function datepickerOptions(altInputId) {
+    var opt = {
+      minDate: new Date(2000,1,5),
+      maxDate: new Date(2100,11,31),
+      changeMonth: true,
+      changeYear: true,
+      dateFormat: "yy-mm-dd",
+    };
+    if(altInputId){
+      opt.altField = altInputId;
+      opt.altFormat = "chinese-lunar";
+    }
+    return opt;
+  }
+
+  $("#datepicker").datepicker(datepickerOptions('#datepicker_alternate'));
+  $("#datepicker").val((new Date()).toISOString().substr(0,10));
+  $('#datepicker_alternate').val(LunarMap.toStr(LunarMap.date2l(new Date())));
+  $("#recurrence_end").datepicker(datepickerOptions());
+  $("#recurrence_end").val((new Date()).toISOString().substr(0,10));
 
   var Calendar = Backbone.Model.extend({
     toString: function(){
@@ -147,7 +164,7 @@ $(function() {
   });
 
   var CalendarListView = Backbone.View.extend({
-    el: $('#div_calendar_list'),
+    el: $('#calendar_list'),
     events: {
       'click #btn_new_calendar': 'newCalendar',
     },
@@ -164,8 +181,8 @@ $(function() {
           var text = '' + this.collection.models[i];
           select.append(new Option(text, id));
         }
-        $('#span_calendars').show();
-        $('#icon_loading').hide();
+        this.$el.show();
+        $('#icon_loading_old').hide();
       }
       else{
         alert(this.collection.errMsg);
@@ -179,7 +196,7 @@ $(function() {
       };
       var request = gapi.client.calendar.calendars.insert(resource);
       var collection = this.collection;
-      $('#icon_loading').show();
+      $('#icon_loading_new').show();
       request.execute(function(resp){
         if(resp.code == undefined){
           resp.timestamp = Date.now();
@@ -190,7 +207,7 @@ $(function() {
           alert('failed, reason: ' + resp.code + ',' + resp.message);
           return false;
         }
-        $('#icon_loading').hide();
+        $('#icon_loading_new').hide();
       });
       return true;
     }
@@ -237,23 +254,51 @@ $(function() {
           <p class="lead">编辑农历日期和事件并添加到 Google Calendar<br/></p>
           <a class="btn btn-large btn-success" href="#" onclick="doAuthorize(false)">Authorize</a>
         </div>
-        <div id="div_auth_ok">
-          <div id="div_calendar_list">
-            <span id='span_calendars' style="display: none;">
-              *添加到日历&nbsp;&nbsp;
-              <select id='sel_calendars'></select>
-              或&nbsp;
-              <button id="btn_new_calendar" class="btn">新建一个日历</button>
-            </span>
-            <img id="icon_loading" src="loading.gif"/>
-          </div>
-          <div id='div_datepicker'>
-            *选择日期&nbsp;<input type="text" id="datepicker" />&nbsp;
-            <input type="text" id="datepicker_alternate" size="30" />
-          </div>
-          <div id='div_recurrence'>
-            <button id='btn_a'>abc</button>
-          </div>
+        <div id="div_auth_ok" style='text-align: center;'>
+          <div><img id="icon_loading_old" src="loading.gif"/></div>
+          <table>
+            <tbody>
+              <tr id="calendar_list" style="display: none;">
+                <td>*</td>
+                <td>加到日历</td>
+                <td><select id='sel_calendars'></select></td>
+                <td>或者</td>
+                <td>
+                  <button id="btn_new_calendar" class="btn">新增一个日历</button>
+                  <img id="icon_loading_new" src="loading.gif" style="display: none"/>
+                </td>
+              </tr>
+              <tr>
+                <td>*</td>
+                <td>选择日期</td>
+                <td><input type="text" id="datepicker"/></td>
+                <td>农历</td>
+                <td><input disabled=true type="text" id="datepicker_alternate" size="30"/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>事件标题</td>
+                <td><input type="text" id='event_summary'/></td>
+                <td>描述</td>
+                <td><input type="text" id='event_description'/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>重复发生</td>
+                <td>
+                  每<input type='number' style="width: 60px;" value='0'/>
+                  <select id='sel_recurrence' style="width: 60px;">
+                    <option value='year'>年</option>
+                    <option value='month'>月</option>
+                    <option value='day'>天</option>
+                  </select>一次
+                </td>
+                <td>直到</td>
+                <td><input type="text" id="recurrence_end"/></td>
+              </tr>
+            </tbody>
+          </table>
+          <button id='doit' class='btn btn-large btn-primary'>噢啦</button>
         </div>
       </div>
       <hr>
