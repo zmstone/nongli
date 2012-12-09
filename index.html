@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <title>农历-> Google Calendar</title>
+
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css"/>
+    <style type="text/css">
+      body {
+        padding-top: 10px;
+        padding-bottom: 20px;
+      }
+      table{
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
+      .container {
+        margin: 0 auto;
+        max-width: 800px;
+      }
+    </style>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
+
+    <script type="text/javascript" src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="http://documentcloud.github.com/backbone/backbone-min.js"></script>
+
+    <script type="text/javascript" src="lunarmap.js"></script>
+    <script type="text/javascript" src="jquery-ui-1.9.2.js"></script>
+  </head>
+
+  <script type="text/javascript">
+
+  var Auth = Backbone.Model.extend({
+    defaults: {
+      client_id : '424449423080',
+      apiKey    : 'AIzaSyATN8YFPrFOLLeRI7B0bRTFhT3TmjdtFds',
+      scope     : 'https://www.googleapis.com/auth/calendar',
+      authOk    : false,
+    },
+  });
+
+  var AuthView = Backbone.View.extend({
+    initialize: function() {
+      _.bindAll(this, "render");
+      this.model.bind("change", this.render, this);
+    },
+    render: function(){
+      var divFail = $('#div_auth_fail');
+      var divOk   = $('#div_auth_ok');
+      if(this.model.get('authOk')){
+        divFail.hide();
+        divOk.show();
+      }
+      else{
+        divFail.show();
+        divOk.hide();
+      }
+      return this;
+    },
+  });
+
+  var auth = new Auth();
+  var authView = new AuthView({model: auth});
+
+  function doAuthorize(isImmediate){
+    var req = auth.toJSON();
+    req.immediate = isImmediate;
+    gapi.auth.authorize(req, function(result){
+      auth.set({authOk: (result && !result.error)});
+    })
+  }
+
+  function gapiLoaded(){
+    gapi.client.setApiKey(auth.get('apiKey'));
+    window.setTimeout(function(){doAuthorize(true)}, 10);
+  }
+
+  </script>
+
+  <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=gapiLoaded"></script>
+
+  <script type="text/javascript">
+
+$(function() {
+
+  var CalEvents = Backbone.Model.extend({
+    defaults:{
+      index: -1,
+      dates: [],
+    },
+    length: function(){
+      return this.get('dates').length;
+    },
+    isFinished: function(){
+      return this.get('index') >= this.length();
+    },
+    bumpIndex: function(){
+      this.set('index', this.get('index') + 1);
+    },
+    index: function(){
+      return this.get('index');
+    },
+    curDate: function(){
+      var i = this.get('index');
+      return this.get('dates')[i];
+    },
+    nextDay: function(date){
+      return new Date(date.setDate(date.getDate() + 1));
+    },
+    nextDate: function(date, unit){
+      var max = LunarMap.maxDate();
+      if(unit == 'day'){
+        return this.nextDay(date);
+      }
+      if(unit == 'month'){
+        var ld = LunarMap.date2l(date)[2];
+        if(!ld){
+          console.log('bad date ' + date);
+          return max;
+        }
+        var td = new Date(date);
+        td.setDate(date.getDate() + 29);
+        while(LunarMap.date2l(td)[2] != ld && td < max){
+          td = this.nextDay(td);
+        }
+        return td;
+      }
+      if(unit == 'year'){
+        var ld = LunarMap.date2l(date);
+        if(!ld) return max;
+        for(var year = ld[0] + 1; year <= max.getFullYear(); year ++){
+          var td = LunarMap.l2date(year, ld[1], ld[2]);
+          if(td) return td;
+        }
+        return max;
+      }
+      alert('wtf!');
+      return max;
+    },
+    populateDates: function(start, end, unit){
+      var dates = [];
+      var max = LunarMap.maxDate();
+      var d = new Date(start);
+      while(d <= end && d < max){
+        dates.push(new Date(d));
+        d = this.nextDate(d, unit);
+      }
+      this.set('index', -1);
+      this.set('dates', dates);
+    },
+  });
+
+  var CalEventsView = Backbone.View.extend({
+    el: $('#div_auth_ok'),
+    events: {
+      'click #doit': 'doit',
+      'change #datepicker': 'adjustRecurrenceEnd',
+    },
+    initialize: function(){
+      $("#datepicker").datepicker(this.datepickerOptions('#datepicker_alt'));
+      $("#datepicker").val((new Date()).toISOString().substr(0,10));
+      $('#datepicker_alt').val(LunarMap.toStr(LunarMap.date2l(new Date())));
+      $("#recurrence_end").datepicker(this.datepickerOptions());
+      $("#recurrence_end").val((new Date()).toISOString().substr(0,10));
+      _.bindAll(this, "insertLoop");
+      this.model.bind("change:index", this.insertLoop, this);
+    },
+    summary: function(){
+      return $('#event_summary').val();
+    },
+    description: function(){
+      return $('#event_description').val();
+    },
+    calendarId: function(){
+      return $('#sel_calendars').val();
+    },
+    startDate: function() {
+      return new Date($('#datepicker').val());
+    },
+    setEndDate: function(d){
+      $('#recurrence_end').val(d.toISOString().substr(0,10));
+    },
+    endDate: function(){
+      return new Date($('#recurrence_end').val());
+    },
+    unit: function(){
+      return $('#sel_recurrence').val();
+    },
+    doit: function(){
+      var startDate = this.startDate();
+      var endDate   = this.endDate();
+      if(endDate < startDate){
+        alert('sorry, I cannt move backward in time');
+        return false;
+      }
+      if(this.calendarId() == ''){
+        return false;
+      }
+      this.model.populateDates(startDate, endDate, this.unit());
+      this.model.bumpIndex(); // start looping
+    },
+    insertLoop: function(){
+      if(this.model.index() < 0 || this.model.isFinished()) return false;
+      var date = this.model.curDate();
+      var d = LunarMap.date2l(date);
+      var summary = LunarMap.toStr(d);
+      if(this.summary() != '') summary += '#' + this.summary();
+      var dateStr = date.toISOString().substr(0,10);
+      var requestBody = {
+        "calendarId": this.calendarId(),
+        "resource": { "summary": summary,
+                      "start"  : { "date": dateStr},
+                      "end"    : { "date": dateStr},
+                    },
+      };
+      var request = gapi.client.calendar.events.insert(requestBody);
+      var self = this;
+      var handleResp = function(resp){
+        if(resp.code == undefined){
+          self.model.bumpIndex(); // loop to the next
+          self.updateProgress('向' + dateStr + '添加了: ' + summary);
+          return true;
+        }
+        else{
+          var text = 'failed, reason: ' + resp.code + ',' + resp.message;
+          self.updateProgress(text);
+          return false;
+        }
+      };
+      request.execute(handleResp);
+      // window.setTimeout(function(){handleResp({})}, 1000); // for test
+    },
+    updateProgress: function(text){
+      var progress = Math.round(this.model.index() * 100 / this.model.length());
+      $('#div_progress').width(progress + '%');
+      $('#last_event').html(text);
+    },
+    makeDateList: function(start, end, unit){
+
+    },
+    adjustRecurrenceEnd: function(){
+      if(this.endDate() < this.startDate()){
+        this.setEndDate(this.startDate());
+      }
+    },
+    datepickerOptions: function(altInputId) {
+      var opt = {
+        minDate: LunarMap.minDate(),
+        maxDate: LunarMap.maxDate(),
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "yy-mm-dd",
+      };
+      if(altInputId){
+        opt.altField = altInputId;
+        opt.altFormat = "chinese-lunar";
+      }
+      return opt;
+    },
+  });
+
+  var calEventsView = new CalEventsView({model: new CalEvents()});
+
+  var Calendar = Backbone.Model.extend({
+    toString: function(){
+      return this.get('summary') + '(' + this.id + ')';
+    },
+    isNongli: function(){
+      return this.get('summary').indexOf("农历") >= 0;
+    },
+    compareTo: function(other){
+      if(this.isNongli()){
+        if(other.isNongli()){
+          return this.get('timestamp') > other.get('timestamp') ? -1 : 1;
+        }
+        return -1;
+      }
+      return 1;
+    },
+  });
+
+  var CalendarList = Backbone.Collection.extend({
+    model: Calendar,
+    errMsg: '',
+    initialize: function() {
+      _.bindAll(this, "fetch");
+      auth.bind("change", this.fetch);
+    },
+    fetch: function() {
+      var self = this;
+      gapi.client.load('calendar', 'v3', function() {
+        var request = gapi.client.calendar.calendarList.list({});
+        var now     = Date.now();
+        request.execute(function(resp){
+          var calendars = resp.items;
+          if(calendars){
+            for(var i = 0; i < calendars.length; i ++){
+              if(calendars[i].accessRole == "owner"){
+                calendars[i].timestamp = now;
+                self.push(calendars[i]);
+              }
+            }
+          }
+          else{
+            self.errMsg = 'failed to fetch calendars: ' +
+                          resp.code + ', ' + resp.message;
+            alert(self.errMsg);
+          }
+        })
+      })
+    },
+    comparator: function(a, b){
+      return a.compareTo(b);
+    },
+  });
+
+  var CalendarListView = Backbone.View.extend({
+    el: $('#calendar_list'),
+    events: {
+      'click #btn_new_calendar': 'newCalendar',
+    },
+    initialize: function() {
+      _.bindAll(this, "render");
+      this.collection.bind('all', this.render);
+    },
+    render: function(){
+      if(this.collection.errMsg == ''){
+        var select = $('#sel_calendars');
+        select.empty();
+        for(var i = 0; i < this.collection.length; i ++){
+          var id   = this.collection.models[i].id;
+          var text = '' + this.collection.models[i];
+          select.append(new Option(text, id));
+        }
+        this.$el.show();
+        $('#icon_loading_old').hide();
+      }
+      else{
+        alert(this.collection.errMsg);
+      }
+    },
+    newCalendar: function(){
+      var summary = prompt("新建日历名称", "农历");
+      if(!summary){ return false; }
+      var resource = {
+        "resource": { "summary": summary }
+      };
+      var request = gapi.client.calendar.calendars.insert(resource);
+      var collection = this.collection;
+      $('#icon_loading_new').show();
+      request.execute(function(resp){
+        if(resp.code == undefined){
+          resp.timestamp = Date.now();
+          var calendar = new Calendar(resp);
+          collection.add(calendar);
+        }
+        else{
+          alert('failed, reason: ' + resp.code + ',' + resp.message);
+          return false;
+        }
+        $('#icon_loading_new').hide();
+      });
+      return true;
+    }
+  });
+
+  var calendarListView = new CalendarListView({collection: new CalendarList()});
+
+});
+
+  </script>
+
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a class="btn-info" target='_blank' href="https://www.google.com/calendar/">查看 >></a></li>
+        </ul>
+        <h3 class="muted">农历 -> Google Calendar</h3>
+      </div>
+      <hr/>
+      <div id="div_auth_switch">
+        <div id="div_auth_fail" style="text-align: center; display: none;">
+          <p class="lead">编辑农历日期和事件并添加到 Google Calendar<br/></p>
+          <a class="btn btn-large btn-success" href="#" onclick="doAuthorize(false)">Authorize</a>
+        </div>
+        <div id="div_auth_ok" style='text-align: center;'>
+          <img id="icon_loading_old" src="loading.gif"/>
+          <table>
+            <tbody>
+              <tr id="calendar_list" style="display: none;">
+                <td>*</td>
+                <td>加到日历</td>
+                <td><select id='sel_calendars'></select></td>
+                <td>或者</td>
+                <td>
+                  <button id="btn_new_calendar" class="btn">新增一个日历</button>
+                  <img id="icon_loading_new" src="loading.gif" style="display: none"/>
+                </td>
+              </tr>
+              <tr>
+                <td>*</td>
+                <td>选择日期</td>
+                <td><input type="text" id="datepicker"/></td>
+                <td>农历</td>
+                <td><input disabled=true type="text" id="datepicker_alt" size="30"/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>事件标题</td>
+                <td><input type="text" id='event_summary'/></td>
+                <td>描述</td>
+                <td><input type="text" id='event_description'/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>重复发生</td>
+                <td>
+                  每<select id='sel_recurrence' style="width: 100px;">
+                    <option value='year'>年</option>
+                    <option value='month'>月</option>
+                    <option value='day'>天</option>
+                  </select>发生
+                </td>
+                <td>直到</td>
+                <td><input type="text" id="recurrence_end"/></td>
+              </tr>
+            </tbody>
+          </table><br/>
+          <div style="padding-bottom: 15px;">
+            <button id='doit' class='btn btn-large btn-primary'>噢啦</button>
+          </div>
+          <span id='last_event'>TIP: 事件会以 农历日期#标题 添加，如：“八月初五#小恬生日”，事件标题若留空白，事件标题则只有农历日期。</span>
+          <div class="progress" style="height: 5px">
+            <div id='div_progress' class="bar" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+      <hr/>
+      <div class="footer">
+        <p style="float:right;">zmstone艾特gmail.com</p>
+      </div>
+    </div>
+  </body>
+
+</html>
+
