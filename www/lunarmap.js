@@ -1295,11 +1295,13 @@ LunarMap.makeTable = function(){
 LunarMap.table = LunarMap.makeTable();
 
 LunarMap.g2l = function(Y, M, D) {
-  return LunarMap.table.g2l[LunarMap.d2s(Y, M, D)];
+  var d = LunarMap.table.g2l[LunarMap.d2s(Y, M, D)];
+  return d ? d.slice() : d;
 };
 
 LunarMap.l2g = function(Y, M, D) {
-  return LunarMap.table.l2g[LunarMap.d2s(Y, M, D)];
+  var d = LunarMap.table.l2g[LunarMap.d2s(Y, M, D)];
+  return d ? d.slice() : d;
 };
 
 LunarMap.date2l = function(d) {
@@ -1308,7 +1310,7 @@ LunarMap.date2l = function(d) {
 
 LunarMap.l2date = function(Y, M, D) {
   var d = LunarMap.l2g(Y, M, D);
-  return new Date(d[0], d[1] - 1, d[2]);
+  return d ? new Date(d[0], d[1] - 1, d[2]) : d;
 };
 
 LunarMap.special = function(d) {

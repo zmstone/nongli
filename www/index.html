@@ -130,8 +130,10 @@ $(function() {
         return td;
       }
       if(unit == 'year'){
-        for(var ld = LunarMap.date2l(date); ld[0] <= max.getYear(); ld[0] ++){
-          var td = LunarMap.l2date(ld);
+        var ld = LunarMap.date2l(date);
+        if(!ld) return max;
+        for(var year = ld[0] + 1; year <= max.getFullYear(); year ++){
+          var td = LunarMap.l2date(year, ld[1], ld[2]);
           if(td) return td;
         }
         return max;
@@ -142,8 +144,10 @@ $(function() {
     populateDates: function(start, end, unit){
       var dates = [];
       var max = LunarMap.maxDate();
-      for(var d = new Date(start); d <= end && d < max; d = this.nextDate(d, unit)){
-        dates.push(d);
+      var d = new Date(start);
+      while(d <= end && d < max){
+        dates.push(new Date(d));
+        d = this.nextDate(d, unit);
       }
       this.set('index', -1);
       this.set('dates', dates);
@@ -204,7 +208,7 @@ $(function() {
       var date = this.model.curDate();
       var d = LunarMap.date2l(date);
       var summary = LunarMap.toStr(d);
-      if(this.summary() != '') summary += this.summary();
+      if(this.summary() != '') summary += '#' + this.summary();
       var dateStr = date.toISOString().substr(0,10);
       var requestBody = {
         "calendarId": this.calendarId(),
