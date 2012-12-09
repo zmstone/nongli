@@ -162,10 +162,10 @@ $(function() {
     },
     initialize: function(){
       $("#datepicker").datepicker(this.datepickerOptions('#datepicker_alt'));
-      $("#datepicker").val((new Date()).toISOString().substr(0,10));
+      $("#datepicker").val(LunarMap.date2s(new Date()));
       $('#datepicker_alt').val(LunarMap.toStr(LunarMap.date2l(new Date())));
       $("#recurrence_end").datepicker(this.datepickerOptions());
-      $("#recurrence_end").val((new Date()).toISOString().substr(0,10));
+      $("#recurrence_end").val(LunarMap.date2s(new Date()));
       _.bindAll(this, "insertLoop");
       this.model.bind("change:index", this.insertLoop, this);
     },
@@ -182,7 +182,7 @@ $(function() {
       return new Date($('#datepicker').val());
     },
     setEndDate: function(d){
-      $('#recurrence_end').val(d.toISOString().substr(0,10));
+      $('#recurrence_end').val(LunarMap.date2s(d));
     },
     endDate: function(){
       return new Date($('#recurrence_end').val());
@@ -209,7 +209,7 @@ $(function() {
       var d = LunarMap.date2l(date);
       var summary = LunarMap.toStr(d);
       if(this.summary() != '') summary += '#' + this.summary();
-      var dateStr = date.toISOString().substr(0,10);
+      var dateStr = LunarMap.date2s(date);
       var requestBody = {
         "calendarId": this.calendarId(),
         "resource": { "summary": summary,

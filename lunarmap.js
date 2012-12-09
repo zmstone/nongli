@@ -1254,8 +1254,16 @@ LunarMap.rawMonthTable = function() {
 [2100, 12, 31, 12] ];
 };
 
+LunarMap.date2s = function(d) {
+  return LunarMap.d2s(d.getFullYear(), d.getMonth() + 1, d.getDate());
+};
+
 LunarMap.d2s = function(Y, M, D){
-  return Y + '-' + M + '-' + D;
+  var m = M;
+  if(d < 10) m = '0' + M;
+  var d = D;
+  if(d < 10) d = '0' + D;
+  return Y + '-' + m + '-' + d;
 };
 
 LunarMap.makeTable = function(){
