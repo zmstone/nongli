@@ -288,7 +288,7 @@ $(function() {
     errMsg: '',
     initialize: function() {
       _.bindAll(this, "fetch");
-      auth.bind("change", this.fetch);
+      auth.bind("change:authOk", this.fetch);
     },
     fetch: function() {
       var self = this;
@@ -301,14 +301,15 @@ $(function() {
             for(var i = 0; i < calendars.length; i ++){
               if(calendars[i].accessRole == "owner"){
                 calendars[i].timestamp = now;
-                self.push(calendars[i]);
+                self.add(calendars[i]);
               }
             }
           }
           else{
             self.errMsg = 'failed to fetch calendars: ' +
                           resp.code + ', ' + resp.message;
-            alert(self.errMsg);
+            console.log(self.errMsg);
+            //alert(self.errMsg);
           }
         })
       })
@@ -325,7 +326,7 @@ $(function() {
     },
     initialize: function() {
       _.bindAll(this, "render");
-      this.collection.bind('all', this.render);
+      this.collection.bind('add', this.render);
     },
     render: function(){
       if(this.collection.errMsg == ''){
@@ -340,7 +341,9 @@ $(function() {
         $('#icon_loading_old').hide();
       }
       else{
-        alert(this.collection.errMsg);
+        console.log(this.collection.errMsg);
+        document.location.reload(true); // adhock
+        //alert(this.collection.errMsg);
       }
     },
     newCalendar: function(){
