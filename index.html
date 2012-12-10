@@ -292,6 +292,9 @@ $(function() {
     },
     fetch: function() {
       var self = this;
+      if(!auth.get('authOk')){
+        return false;
+      }
       gapi.client.load('calendar', 'v3', function() {
         var request = gapi.client.calendar.calendarList.list({});
         var now     = Date.now();
@@ -342,7 +345,6 @@ $(function() {
       }
       else{
         console.log(this.collection.errMsg);
-        document.location.reload(true); // adhock
         //alert(this.collection.errMsg);
       }
     },
